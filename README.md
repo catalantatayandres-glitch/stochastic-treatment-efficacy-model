@@ -89,31 +89,49 @@ outcomes.
 
 **① Reproduction.** Each species grows until it fills its habitat, and the other species takes up space too:
 
-$$\lambda_I = r_I\, I \left(1 - \frac{I + \alpha_{IN}\, N}{K_I}\right), \qquad \lambda_N = r_N\, N \left(1 - \frac{N + \alpha_{NI}\, I}{K_N}\right)$$
+```math
+\lambda_I = r_I I \left(1 - \frac{I + \alpha_{IN} N}{K_I}\right), \qquad \lambda_N = r_N N \left(1 - \frac{N + \alpha_{NI} I}{K_N}\right)
+```
 
-$$\text{newborns} \sim \text{Poisson}(\lambda)$$
+```math
+\text{newborns} \sim \text{Poisson}(\lambda)
+```
 
 **② Natural death.** Each crayfish dies with a small monthly probability $m$:
 
-$$\text{deaths} \sim \text{Binomial}(n,\ m)$$
+```math
+\text{deaths} \sim \text{Binomial}(n,\ m)
+```
 
 **③ Disease transmission.** The more carriers among the invasives, the higher the infection risk for a native:
 
-$$p_{\text{infection}} = 1 - e^{-\beta\, I_C / I}$$
+```math
+p_{\text{infection}} = 1 - e^{-\beta I_C / I}
+```
 
 **Splitting the treatment.** A share $c$ of crayfish meets a dose each month (coverage). A fraction $f$ of the doses is RNAi and $1-f$ is protein:
 
-$$p_{\text{protect}} = c\,(1-f)\,e_N \qquad\qquad p_{\text{kill}} = c\,f\,\big(1 - c\,(1-f)\big)\,e_I$$
+```math
+p_{\text{protect}} = c \cdot (1-f) \cdot e_N
+```
+
+```math
+p_{\text{kill}} = c \cdot f \cdot \big(1 - c \cdot (1-f)\big) \cdot e_I
+```
 
 The extra factor in $p_{\text{kill}}$ is there because a carrier that also takes the protein is rescued by it.
 
 **④ Defend.** Protected natives survive the month. Unprotected infected natives die with probability $\mu_A$:
 
-$$\text{plague deaths} \sim \text{Binomial}\big(N_I - \text{protected},\ \mu_A\big)$$
+```math
+\text{plague deaths} \sim \text{Binomial}\big(N_I - \text{protected},\ \mu_A\big)
+```
 
 **⑤ Disarm.** RNAi kills only carriers:
 
-$$\text{RNAi deaths} \sim \text{Binomial}\big(I_C,\ p_{\text{kill}}\big)$$
+```math
+\text{RNAi deaths} \sim \text{Binomial}\big(I_C,\ p_{\text{kill}}\big)
+```
 
 ## Parameters
 
@@ -137,10 +155,6 @@ All rates are per month.
 | $c$ | Coverage: share of crayfish reached each month | 0.5 | Scenario choice |
 | $f$ | Share of the treatment that is RNAi | 0 to 1 | What we are testing |
 | $e_I,\ e_N$ | Treatment efficacy | 1.0 | Best-case target |
-
-**Habitats tested** ($K_I$ / $K_N$): Favors native 5,000 / 6,400 · **Neutral 6,400 / 5,500** · Balanced 8,000 / 3,000 · Favors invasive 11,000 / 1,400
-
-**Competition levels** ($\alpha_{IN}$ / $\alpha_{NI}$): Low 0.1 / 0.3 · **Moderate 0.3 / 0.5** · High 0.7 / 0.9
 
 </details>
 
