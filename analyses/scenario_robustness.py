@@ -1,5 +1,5 @@
 """
-05_habitat_competition_transmission.py: Habitat x Competition x Transmission -- 27-scenario summary (wiki figure)
+scenario_robustness.py: Habitat x Competition x Transmission -- 27-scenario summary (wiki figure)
 ================================================================================
 
 Purpose
@@ -45,7 +45,8 @@ population under defensive (protein). Positive (green) = RNAi wins; negative
 from __future__ import annotations
 
 import os
-import importlib.util
+import sys
+from pathlib import Path
 from typing import Dict, Any, List
 
 import numpy as np
@@ -54,22 +55,16 @@ import matplotlib.pyplot as plt
 
 
 # ---------------------------------------------------------------------------
-# 1. Dynamically import the model engine (01_model_engine.py)
+# 1. Import the model engine
 # ---------------------------------------------------------------------------
 
-def _load_stage6():
-    here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "01_model_engine.py")
-    spec = importlib.util.spec_from_file_location("stage6_combined_treatment", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))  # lets the script run without `pip install -e .`
 
+from stochastic_treatment_efficacy_model import engine  # noqa: E402
 
-stage6 = _load_stage6()
-
-FIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures")
-os.makedirs(FIG_DIR, exist_ok=True)
+FIG_DIR = REPO_ROOT / "figures"
+FIG_DIR.mkdir(exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
@@ -173,7 +168,7 @@ def run_all_scenarios(n_replicates: int = 30, base_seed: int = 240000) -> pd.Dat
                 for strategy_name, mix in [("Defensive (protein)", 0.0), ("Disarming (RNAi)", 1.0)]:
                     p = build_params(habitat_name, comp_name, trans_name, mix)
                     for r in range(n_replicates):
-                        res = stage6.simulate_combined_treatment(p, seed=seed_counter)
+                        res = engine.simulate_combined_treatment(p, seed=seed_counter)
                         seed_counter += 1
                         records.append({
                             "habitat": habitat_name, "competition": comp_name, "transmission": trans_name,
@@ -236,11 +231,12 @@ def plot_wiki_summary_figure(results: pd.DataFrame, save_path: str = None) -> No
                          color="white" if abs(val) > vmax * 0.5 else "black")
 
     fig.suptitle("Does RNAi still outperform protein supplementation everywhere?",
-                 fontsize=16, fontweight="bold", color="#1F3864", y=1.02)
-    fig.text(0.5, 0.965,
+                 fontsize=16, fontweight="bold", color="#1F3864", y=1.08)
+    # anchored by its bottom edge so it can never collide with the panel titles
+    fig.text(0.5, 0.94,
         "RNAi advantage (disarming (RNAi) minus defensive (protein) median final native population), across all 27 tested scenarios\n"
         "Green = RNAi wins by more; red = protein wins by more. Efficacy=100%, coverage=50%.",
-        ha="center", va="top", fontsize=10.5)
+        ha="center", va="bottom", fontsize=10.5)
 
     cbar = fig.colorbar(im, ax=axes, shrink=0.85, pad=0.02)
     cbar.set_label("RNAi advantage\n(disarming (RNAi) \u2212 defensive (protein))", fontsize=11)
@@ -281,7 +277,7 @@ def run_sanity_checks() -> None:
     finally:
         matplotlib.use(original_backend)
 
-    print("All 05_habitat_competition_transmission.py (habitat x competition x transmission summary) sanity checks passed.")
+    print("All scenario_robustness.py (habitat x competition x transmission summary) sanity checks passed.")
 
 
 # ---------------------------------------------------------------------------
@@ -295,7 +291,6 @@ if __name__ == "__main__":
     print(f"\nRunning all 27 scenarios x 2 strategies (this takes a while)...")
     results = run_all_scenarios(n_replicates=30)
 
-    here = os.path.dirname(os.path.abspath(__file__))
     save_path = os.path.join(FIG_DIR, "other_explorations_habitat_competition_transmission.png")
     print("\nGenerating summary figure...")
     plot_wiki_summary_figure(results, save_path=save_path)

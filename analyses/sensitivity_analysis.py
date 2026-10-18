@@ -1,5 +1,5 @@
 """
-02_sensitivity_analysis.py: One-at-a-time parameter exploration (fixed high-effort treatment)
+sensitivity_analysis.py: One-at-a-time parameter exploration (fixed high-effort treatment)
 ================================================================================
 
 Purpose
@@ -52,7 +52,7 @@ spread around the baseline for parameters with no PRECISELY fitted
 literature value (e.g. beta, alpha_IN, alpha_NI, gamma_N,
 invasive_carrier_fitness_cost, migration_rate -- migration_rate does
 have a qualitative literature basis, Bubb et al. 2004/2006, but not a
-directly usable "% per month" statistic; see the model engine (01_model_engine.py) module docstring).
+directly usable "% per month" statistic; see the model engine (engine.py) module docstring).
 
 Update in this version
 -----------------------
@@ -67,7 +67,8 @@ can also be fixed manually via the new `y_range` argument.
 from __future__ import annotations
 
 import os
-import importlib.util
+import sys
+from pathlib import Path
 from typing import Dict, Any, List
 
 import numpy as np
@@ -76,22 +77,16 @@ import matplotlib.pyplot as plt
 
 
 # ---------------------------------------------------------------------------
-# 1. Dynamically import the model engine (01_model_engine.py)
+# 1. Import the model engine
 # ---------------------------------------------------------------------------
 
-def _load_stage6():
-    here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "01_model_engine.py")
-    spec = importlib.util.spec_from_file_location("stage6_combined_treatment", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))  # lets the script run without `pip install -e .`
 
+from stochastic_treatment_efficacy_model import engine  # noqa: E402
 
-stage6 = _load_stage6()
-
-FIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures")
-os.makedirs(FIG_DIR, exist_ok=True)
+FIG_DIR = REPO_ROOT / "figures"
+FIG_DIR.mkdir(exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
@@ -131,7 +126,7 @@ BASE_PARAMS: Dict[str, Any] = {
     "efficacy_N_protect": 1.0,
     "overall_encounter_rate": 0.8,
     "mix_fraction_kill": 0.8,
-    "migration_rate": 0.0,  # migration off by default -- see the model engine (01_model_engine.py) module docstring
+    "migration_rate": 0.0,  # migration off by default -- see the model engine (engine.py) module docstring
     "treatment_months": list(range(1, 13)),
 
     # --- Simulation settings ---
@@ -162,7 +157,7 @@ PARAMETER_RANGES: Dict[str, List[float]] = {
     "gamma_N": [0.0, 0.05, 0.1, 0.2],        # not well documented -- exploratory
     "invasive_carrier_fitness_cost": [0.0, 0.01, 0.02, 0.05],
     "prob_recruit_carrier": [0.1, 0.2, 0.35, 0.5],
-    "migration_rate": [0.0, 0.02, 0.05, 0.1, 0.2],  # baseline=0.0 (off); 0.05 = the model engine (01_model_engine.py)'s illustrative literature-informed "on" default (Bubb et al. 2004/2006, no precisely fitted value -- see the model engine (01_model_engine.py) module docstring)
+    "migration_rate": [0.0, 0.02, 0.05, 0.1, 0.2],  # baseline=0.0 (off); 0.05 = the model engine (engine.py)'s illustrative literature-informed "on" default (Bubb et al. 2004/2006, no precisely fitted value -- see the model engine (engine.py) module docstring)
 }
 
 
@@ -215,7 +210,7 @@ def run_one_at_a_time_sweep(
             p = base_params.copy()
             p[param_name] = value
             for _ in range(n_replicates):
-                res = stage6.simulate_combined_treatment(p, seed=seed_counter)
+                res = engine.simulate_combined_treatment(p, seed=seed_counter)
                 seed_counter += 1
                 records.append({
                     "parameter": param_name,
@@ -441,7 +436,7 @@ def run_sanity_checks() -> None:
     finally:
         matplotlib.use(original_backend)
 
-    print("All 02_sensitivity_analysis.py (one-at-a-time parameter exploration) sanity checks passed.")
+    print("All sensitivity_analysis.py (one-at-a-time parameter exploration) sanity checks passed.")
 
 
 # ---------------------------------------------------------------------------

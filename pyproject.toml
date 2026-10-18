@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stochastic-treatment-efficacy-model"
+version = "1.0.0"
+description = "Stochastic population model comparing RNAi (disarm) and protein supplementation (defend) treatment strategies against crayfish plague."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Andres Catalan Tatay" }]
+requires-python = ">=3.9"
+dependencies = ["numpy", "pandas", "matplotlib"]
+keywords = ["stochastic simulation", "population dynamics", "epidemiology", "treatment efficacy", "Monte Carlo", "iGEM"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

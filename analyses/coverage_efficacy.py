@@ -1,16 +1,16 @@
 """
-06_coverage_efficacy.py: Coverage x Efficacy -- absolute final native population, per strategy
+coverage_efficacy.py: Coverage x Efficacy -- absolute final native population, per strategy
 ================================================================================
 
 Purpose
 -------
-Extends 06_coverage_efficacy.py (which showed the RNAi ADVANTAGE, i.e. the difference
+Extends coverage_efficacy.py (which showed the RNAi ADVANTAGE, i.e. the difference
 between strategies) to instead show the ACTUAL final native population
 for each strategy directly, across the full coverage x efficacy grid.
 Three panels side by side (Defensive (protein), Mixed, Disarming (RNAi)), each colored
 by median final native population -- not a comparison between them.
 
-Fixed scenario (same as main results / validation / 06_coverage_efficacy.py)
+Fixed scenario (same as main results / validation / coverage_efficacy.py)
 --------------------------------------------------------------------------
     Habitat      : Neutral   (K_I=6400, K_N=5500)
     Competition  : Moderate  (alpha_IN=0.3, alpha_NI=0.5)
@@ -34,7 +34,8 @@ are directly comparable to each other.
 from __future__ import annotations
 
 import os
-import importlib.util
+import sys
+from pathlib import Path
 from typing import Dict, Any, List
 
 import numpy as np
@@ -42,19 +43,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def _load_stage6():
-    here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "01_model_engine.py")
-    spec = importlib.util.spec_from_file_location("stage6_combined_treatment", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))  # lets the script run without `pip install -e .`
 
+from stochastic_treatment_efficacy_model import engine  # noqa: E402
 
-stage6 = _load_stage6()
-
-FIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures")
-os.makedirs(FIG_DIR, exist_ok=True)
+FIG_DIR = REPO_ROOT / "figures"
+FIG_DIR.mkdir(exist_ok=True)
 
 K_I_FIXED = 6400.0
 K_N_FIXED = 5500.0
@@ -127,7 +122,7 @@ def run_sweep(n_replicates: int = 30, base_seed: int = 290000) -> pd.DataFrame:
             for strat in STRATEGIES:
                 p = build_params(coverage, efficacy, strat["mix"])
                 for r in range(n_replicates):
-                    res = stage6.simulate_combined_treatment(p, seed=seed_counter)
+                    res = engine.simulate_combined_treatment(p, seed=seed_counter)
                     seed_counter += 1
                     records.append({
                         "coverage": coverage, "efficacy": efficacy, "strategy": strat["label"],
@@ -221,14 +216,13 @@ def run_sanity_checks() -> None:
     finally:
         COVERAGE_VALUES, EFFICACY_VALUES = original_cov, original_eff
         matplotlib.use(original_backend)
-    print("All 06_coverage_efficacy.py (absolute population, coverage x efficacy) sanity checks passed.")
+    print("All coverage_efficacy.py (absolute population, coverage x efficacy) sanity checks passed.")
 
 
 if __name__ == "__main__":
     run_sanity_checks()
     print(f"\nRunning coverage x efficacy sweep ({len(COVERAGE_VALUES)}x{len(EFFICACY_VALUES)} grid, {len(STRATEGIES)} strategies)...")
     results = run_sweep(n_replicates=30)
-    here = os.path.dirname(os.path.abspath(__file__))
     save_path = os.path.join(FIG_DIR, "other_explorations_coverage_efficacy_absolute.png")
     print("\nGenerating figure...")
     plot_wiki_figure(results, save_path=save_path)

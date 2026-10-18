@@ -1,5 +1,5 @@
 """
-03_main_results.py: Wiki figure -- native population by treatment strategy, main results
+main_results.py: Wiki figure -- native population by treatment strategy, main results
 ================================================================================
 
 Purpose
@@ -20,7 +20,7 @@ Fixed scenario
     I0           : 0.2 x K_I (= 1,280)
 
 Competition (Moderate) and transmission (beta=0.9) are the SAME values
-selected and justified in the validation section (04_validation_bubb2006.py) -- chosen
+selected and justified in the validation section (validation_bubb2006.py) -- chosen
 there because they reproduce the shape of a real, documented native
 displacement (Bubb et al. 2006) while staying consistent with testing
 under a Neutral, non-extreme habitat. This script uses those same
@@ -55,7 +55,8 @@ with 10th-90th percentile bands, large/clean fonts, minimal-clutter style.
 from __future__ import annotations
 
 import os
-import importlib.util
+import sys
+from pathlib import Path
 from typing import Dict, Any, List
 
 import numpy as np
@@ -64,22 +65,16 @@ import matplotlib.pyplot as plt
 
 
 # ---------------------------------------------------------------------------
-# 1. Dynamically import the model engine (01_model_engine.py)
+# 1. Import the model engine
 # ---------------------------------------------------------------------------
 
-def _load_stage6():
-    here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "01_model_engine.py")
-    spec = importlib.util.spec_from_file_location("stage6_combined_treatment", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))  # lets the script run without `pip install -e .`
 
+from stochastic_treatment_efficacy_model import engine  # noqa: E402
 
-stage6 = _load_stage6()
-
-FIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures")
-os.makedirs(FIG_DIR, exist_ok=True)
+FIG_DIR = REPO_ROOT / "figures"
+FIG_DIR.mkdir(exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
@@ -188,7 +183,7 @@ def run_trajectories_for_beta(
     for curve in TREATMENT_CURVES:
         p = build_params(beta_value, curve)
         for r in range(n_replicates):
-            res = stage6.simulate_combined_treatment(p, seed=seed_counter)
+            res = engine.simulate_combined_treatment(p, seed=seed_counter)
             seed_counter += 1
             sub = res[["month", "year", "N"]].copy()
             sub["curve_label"] = curve["label"]
@@ -280,7 +275,7 @@ def run_sanity_checks() -> None:
     finally:
         matplotlib.use(original_backend)
 
-    print("All 03_main_results.py (wiki transmission-scenario figures) sanity checks passed.")
+    print("All main_results.py (wiki transmission-scenario figures) sanity checks passed.")
 
 
 # ---------------------------------------------------------------------------
@@ -298,7 +293,6 @@ if __name__ == "__main__":
         print(f"\nRunning trajectories for beta={beta_value} (this takes a moment)...")
         trajectories = run_trajectories_for_beta(beta_value, n_replicates=50)
 
-        here = os.path.dirname(os.path.abspath(__file__))
         save_path = os.path.join(FIG_DIR, f"wiki_figure_transmission_{beta_value}.png")
         print(f"Generating publication figure for beta={beta_value}...")
         plot_wiki_figure(trajectories, beta_value, save_path)

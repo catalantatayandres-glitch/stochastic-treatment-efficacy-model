@@ -1,5 +1,5 @@
 """
-01_model_engine.py: stochastic crayfish population model (disarming + defensive treatment)
+engine.py: stochastic crayfish population model (disarming + defensive treatment)
 ==========================================================================
 
 Purpose
@@ -623,7 +623,7 @@ def plot_mix_sweep_heatmaps(sweep_results: pd.DataFrame) -> None:
     axes[1].set_title("Native persistence probability")
     fig.colorbar(im1, ax=axes[1])
 
-    fig.suptitle("the model engine (01_model_engine.py): combined treatment -- shared-budget tradeoff")
+    fig.suptitle("the model engine: combined treatment -- shared-budget tradeoff")
     plt.tight_layout()
     plt.show() if plt.get_backend().lower()!='agg' else plt.close()
 
@@ -632,7 +632,7 @@ def plot_mix_sweep_heatmaps(sweep_results: pd.DataFrame) -> None:
 # 5. Plotting function for a single run
 # ---------------------------------------------------------------------------
 
-def plot_totals(results: pd.DataFrame, title: str = "the model engine (01_model_engine.py): combined treatment") -> None:
+def plot_totals(results: pd.DataFrame, title: str = "the model engine: combined treatment") -> None:
     """Plot total invasive (I) and total native (N) populations over time."""
     plt.figure(figsize=(9, 5.5))
     plt.plot(results["year"], results["I"], label="Total invasive (I)", color="firebrick", linewidth=2)
@@ -835,7 +835,7 @@ def run_sanity_checks() -> None:
     for col in ("I_S", "I_C", "N_S", "N_I"):
         assert (results_negative_check[col] >= 0).all(), f"{col} went negative with migration active."
 
-    print("All the model engine (01_model_engine.py) (combined treatment with interference + toggleable migration) sanity checks passed.")
+    print("All the model engine (combined treatment with interference + toggleable migration) sanity checks passed.")
 
     # --- MIX_FRACTION_KILL_SCHEDULE CHECKS (optional, backward-compatible) ---
 

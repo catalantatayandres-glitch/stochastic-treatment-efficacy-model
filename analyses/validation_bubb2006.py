@@ -1,5 +1,5 @@
 """
-04_validation_bubb2006.py: Validation against the Bubb et al. (2006) displacement -- final consolidated version
+validation_bubb2006.py: Validation against the Bubb et al. (2006) displacement -- final consolidated version
 ================================================================================
 
 Purpose
@@ -66,7 +66,8 @@ as PNG files next to this script).
 from __future__ import annotations
 
 import os
-import importlib.util
+import sys
+from pathlib import Path
 from typing import Dict, Any, List, Tuple
 
 import numpy as np
@@ -75,22 +76,16 @@ import matplotlib.pyplot as plt
 
 
 # ---------------------------------------------------------------------------
-# 1. Dynamically import the model engine (01_model_engine.py)
+# 1. Import the model engine
 # ---------------------------------------------------------------------------
 
-def _load_stage6():
-    here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "01_model_engine.py")
-    spec = importlib.util.spec_from_file_location("stage6_combined_treatment", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))  # lets the script run without `pip install -e .`
 
+from stochastic_treatment_efficacy_model import engine  # noqa: E402
 
-stage6 = _load_stage6()
-
-FIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures")
-os.makedirs(FIG_DIR, exist_ok=True)
+FIG_DIR = REPO_ROOT / "figures"
+FIG_DIR.mkdir(exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
@@ -212,7 +207,7 @@ def run_grid(n_replicates: int = 30, base_seed: int = 210000) -> pd.DataFrame:
         for beta_value in BETA_VALUES_TO_TEST:
             p = build_params(comp_name, beta_value)
             for r in range(n_replicates):
-                res = stage6.simulate_combined_treatment(p, seed=seed_counter)
+                res = engine.simulate_combined_treatment(p, seed=seed_counter)
                 seed_counter += 1
                 n_final = res["N"].iloc[-1]
                 pct_decline = 100 * (N0_FIXED - n_final) / N0_FIXED if N0_FIXED > 0 else np.nan
@@ -305,7 +300,7 @@ def run_selected_scenario(n_replicates: int = 50, base_seed: int = 215000) -> pd
     p = build_params(SELECTED_COMPETITION, SELECTED_BETA)
     frames = []
     for r in range(n_replicates):
-        res = stage6.simulate_combined_treatment(p, seed=base_seed + r)
+        res = engine.simulate_combined_treatment(p, seed=base_seed + r)
         sub = res[["month", "year", "N", "I"]].copy()
         sub["replicate"] = r
         frames.append(sub)
@@ -416,7 +411,7 @@ def run_sanity_checks() -> None:
         COMPETITION_ORDER, BETA_VALUES_TO_TEST = original_comp, original_beta
         matplotlib.use(original_backend)
 
-    print("All 04_validation_bubb2006.py (Bubb et al. 2006 validation, final consolidated) sanity checks passed.")
+    print("All validation_bubb2006.py (Bubb et al. 2006 validation, final consolidated) sanity checks passed.")
 
 
 # ---------------------------------------------------------------------------
@@ -427,7 +422,6 @@ if __name__ == "__main__":
 
     run_sanity_checks()
 
-    here = os.path.dirname(os.path.abspath(__file__))
 
     print(f"\nRunning full validation grid ({len(COMPETITION_ORDER)} competition levels x "
           f"{len(BETA_VALUES_TO_TEST)} transmission values)...")

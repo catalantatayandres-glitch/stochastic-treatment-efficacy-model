@@ -1,5 +1,5 @@
 """
-07_migration_effect.py: Migration effect, under the same validated scenario as main results
+migration_effect.py: Migration effect, under the same validated scenario as main results
 ================================================================================
 
 Purpose
@@ -21,9 +21,9 @@ Fixed scenario (identical to main results / validation)
 
 Migration conditions compared
 --------------------------------------------------------------------------
-    "No migration"   : migration_rate = 0.0 (the model engine (01_model_engine.py) default, off)
-    "With migration" : migration_rate = 0.05 (the model engine (01_model_engine.py)'s illustrative
-                        literature-informed default -- see the model engine (01_model_engine.py)
+    "No migration"   : migration_rate = 0.0 (the model engine (engine.py) default, off)
+    "With migration" : migration_rate = 0.05 (the model engine (engine.py)'s illustrative
+                        literature-informed default -- see the model engine (engine.py)
                         module docstring, Bubb et al. 2004/2006)
 
 Output
@@ -35,7 +35,8 @@ With migration), same scenario as main results.
 from __future__ import annotations
 
 import os
-import importlib.util
+import sys
+from pathlib import Path
 from typing import Dict, Any
 
 import numpy as np
@@ -43,19 +44,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def _load_stage6():
-    here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "01_model_engine.py")
-    spec = importlib.util.spec_from_file_location("stage6_combined_treatment", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))  # lets the script run without `pip install -e .`
 
+from stochastic_treatment_efficacy_model import engine  # noqa: E402
 
-stage6 = _load_stage6()
-
-FIG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "figures")
-os.makedirs(FIG_DIR, exist_ok=True)
+FIG_DIR = REPO_ROOT / "figures"
+FIG_DIR.mkdir(exist_ok=True)
 
 K_I_FIXED = 6400.0
 K_N_FIXED = 5500.0
@@ -110,7 +105,7 @@ def run_trajectories(n_replicates: int = 50, base_seed: int = 300000) -> pd.Data
     for mig_name in MIGRATION_ORDER:
         p = build_params(mig_name)
         for r in range(n_replicates):
-            res = stage6.simulate_combined_treatment(p, seed=seed_counter)
+            res = engine.simulate_combined_treatment(p, seed=seed_counter)
             seed_counter += 1
             sub = res[["month", "year", "N"]].copy()
             sub["migration_condition"] = mig_name
@@ -171,14 +166,13 @@ def run_sanity_checks() -> None:
         plt.close("all")
     finally:
         matplotlib.use(original_backend)
-    print("All 07_migration_effect.py sanity checks passed.")
+    print("All migration_effect.py sanity checks passed.")
 
 
 if __name__ == "__main__":
     run_sanity_checks()
     print("\nRunning migration on/off trajectories at the validated scenario...")
     trajectories = run_trajectories(n_replicates=50)
-    here = os.path.dirname(os.path.abspath(__file__))
     save_path = os.path.join(FIG_DIR, "other_explorations_migration_effect.png")
     print("\nGenerating figure...")
     plot_figure(trajectories, save_path=save_path)
