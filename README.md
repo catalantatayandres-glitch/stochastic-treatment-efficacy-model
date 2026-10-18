@@ -17,20 +17,6 @@
 
 ---
 
-## In short
-
-- **The problem:** an invasive crayfish carries a disease that kills native crayfish.
-- **Two treatments:** *Disarm* (RNAi) targets the invasive carriers; *Defend* (a protein supplement) protects the natives.
-- **The model** simulates ten years of both populations to find the best way to use them.
-- **The answer:** the more of the effort goes to **RNAi**, the better the natives do. The protein works best somewhere else: lakes with the disease but no invaders.
-
-<p align="center">
-  <img src="figures/wiki_figure_transmission_0.9.png" width="720" alt="Native population over 10 years under six treatment strategies">
-</p>
-<p align="center"><sub><b>Figure 2.</b> Native crayfish over 10 years for six ways of splitting the treatment, from all protein (blue) to all RNAi (red). Lines are medians; shaded bands show the range of likely outcomes.</sub></p>
-
----
-
 ## What is iGEM?
 
 **iGEM** (International Genetically Engineered Machine) is the world's largest synthetic
@@ -109,25 +95,24 @@ outcomes.
 p_{\text{infection}} = 1 - e^{-\beta I_C / I}
 ```
 
-**Splitting the treatment.** A share $c$ of crayfish meets a dose each month (coverage). A fraction $f$ of the doses is RNAi and $1-f$ is protein:
+For the two treatments, $c$ is the share of crayfish that receive a dose each month and $f$ is
+the share of doses that are RNAi (the rest are protein).
+
+**④ Defend.** An infected native that receives protein is protected for the month. Unprotected infected natives die with probability $\mu_A$:
 
 ```math
 p_{\text{protect}} = c \cdot (1-f) \cdot e_N
 ```
 
 ```math
-p_{\text{kill}} = c \cdot f \cdot \big(1 - c \cdot (1-f)\big) \cdot e_I
-```
-
-The extra factor in $p_{\text{kill}}$ is there because a carrier that also takes the protein is rescued by it.
-
-**④ Defend.** Protected natives survive the month. Unprotected infected natives die with probability $\mu_A$:
-
-```math
 \text{plague deaths} \sim \text{Binomial}\big(N_I - \text{protected},\ \mu_A\big)
 ```
 
-**⑤ Disarm.** RNAi kills only carriers:
+**⑤ Disarm.** A carrier that receives RNAi dies, unless it also received protein that month, which rescues it:
+
+```math
+p_{\text{kill}} = c \cdot f \cdot \big(1 - c \cdot (1-f)\big) \cdot e_I
+```
 
 ```math
 \text{RNAi deaths} \sim \text{Binomial}\big(I_C,\ p_{\text{kill}}\big)
@@ -160,8 +145,12 @@ All rates are per month.
 
 ## Results
 
-We tested six ways of splitting the same treatment effort, from all protein to all RNAi
-(Figure 2, at the top of this page).
+We tested six ways of splitting the same treatment effort, from all protein to all RNAi.
+
+<p align="center">
+  <img src="figures/wiki_figure_transmission_0.9.png" width="720" alt="Native population over 10 years under six treatment strategies">
+</p>
+<p align="center"><sub><b>Figure 2.</b> Native crayfish over 10 years for six ways of splitting the treatment, from all protein (blue) to all RNAi (red). Lines are medians; shaded bands show the range of likely outcomes.</sub></p>
 
 | Strategy | Native crayfish after 10 years (start: about 1,100) |
 |---|---|
