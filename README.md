@@ -12,15 +12,11 @@
 <p align="center">
   <a href="https://github.com/catalantatayandres-glitch/stochastic-treatment-efficacy-model/actions/workflows/tests.yml"><img src="https://github.com/catalantatayandres-glitch/stochastic-treatment-efficacy-model/actions/workflows/tests.yml/badge.svg" alt="tests"></a>
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white" alt="Python 3.9+">
-  <img src="https://img.shields.io/badge/method-stochastic%20Monte%20Carlo-C8692E" alt="Stochastic Monte Carlo">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license">
 </p>
 
 <p align="center">
-  <a href="https://2026.igem.wiki/unilausanne/model/"><b>Model page on the team wiki</b></a> ·
-  <a href="https://2026.igem.wiki/unilausanne/">Team wiki</a> ·
-  <a href="#quickstart">Quickstart</a> ·
-  <a href="#repository-structure">Code structure</a>
+  <a href="https://2026.igem.wiki/unilausanne/model/">Wiki model page</a> · <a href="#quickstart">Quickstart</a>
 </p>
 
 ---
@@ -51,18 +47,10 @@ spreading through the country's waterways.
 The **UNILausanne** team from the University of Lausanne designed **ASTACI**, a three-part
 synthetic biology response:
 
-<table>
-  <tr>
-    <td align="center" width="33%"><img src="docs/images/detect.png" height="96" alt="Detect"><br><b>Detect the pathogen</b></td>
-    <td align="center" width="33%"><img src="docs/images/disarm.png" height="96" alt="Disarm"><br><b>Disarm the carrier</b></td>
-    <td align="center" width="33%"><img src="docs/images/defend.png" height="96" alt="Defend"><br><b>Defend the crayfish</b></td>
-  </tr>
-  <tr>
-    <td valign="top">A portable LAMP kit that detects <i>A. astaci</i> DNA directly from water samples in the field, to support early intervention.</td>
-    <td valign="top">RNA interference (RNAi) silences the genes behind the invasive crayfish's resistance, making it susceptible to the pathogen it carries.</td>
-    <td valign="top">Protein supplementation gives native crayfish the protective proteins naturally found in invasive crayfish, so they tolerate the disease.</td>
-  </tr>
-</table>
+| <img src="docs/images/detect.png" height="64" alt=""> | <img src="docs/images/disarm.png" height="64" alt=""> | <img src="docs/images/defend.png" height="64" alt=""> |
+|:---:|:---:|:---:|
+| **Detect** the pathogen | **Disarm** the carrier | **Defend** the crayfish |
+| LAMP test for *A. astaci* DNA in water samples | RNAi makes invasive carriers susceptible | Protein supplement makes natives tolerant |
 
 **This repository holds the Dry Lab model behind *Disarm* and *Defend*.** It is a stochastic
 population model that predicts what each intervention, or a combination of the two, would do
@@ -90,15 +78,10 @@ to deploy the two treatments.
 
 Our project developed two strategies: an **RNAi-based tool that makes the invasive carrier
 susceptible** to crayfish plague (*disarm*), and a **protein supplement that gives native
-crayfish tolerance** to the disease (*defend*). Before going to the field, two questions
-needed answers:
+crayfish tolerance** to the disease (*defend*). We built the model to answer two questions:
 
-| | The two questions |
-|:---:|---|
-| **1** | Would these strategies make a measurable difference to the survival of native crayfish? |
-| **2** | What is the best way to deploy them: together, alone, or in a specific combination? |
-
-We built this model to answer both.
+1. Would these strategies make a measurable difference to the survival of native crayfish?
+2. What is the best way to deploy them: together, alone, or in a specific combination?
 
 ## How the model works
 
@@ -165,6 +148,10 @@ immigrants from surrounding populations assumed to be at carrying capacity.
 
 ## Parameters
 
+<details>
+<summary><b>Click to see the 13 parameters</b>: definition, value used and literature basis</summary>
+<br>
+
 All rates are **monthly**. The values are those of the reference scenario used in the main
 results.
 
@@ -184,9 +171,7 @@ results.
 | $e_I,\ e_N$ | Treatment efficacy | 1.0 | A best-case target, not a measured value |
 | $m_{\text{mig}}$ | Monthly migration rate | 0 (off) | Qualitative movement data (Bubb et al. 2004, 2006) |
 
-<details>
-<summary><b>Scenario presets used across the analyses</b></summary>
-<br>
+**Scenario presets used across the analyses**
 
 | Habitat | $K_I$ | $K_N$ |
 |---|:---:|:---:|
@@ -254,10 +239,8 @@ of invaders but still carry the pathogen.
 
 Native crayfish face **two problems** at once:
 
-| | The two problems |
-|:---:|---|
-| **1** | **Competition.** Invasive crayfish outcompete natives even without the pathogen, though less severely than when it is present (Pritchard 2020). |
-| **2** | **Disease.** Invasive carriers transmit crayfish plague, which kills almost every infected native. |
+1. **Competition.** Invasive crayfish outcompete natives even without the pathogen, though less severely than when it is present (Pritchard 2020).
+2. **Disease.** Invasive carriers transmit crayfish plague, which kills almost every infected native.
 
 The defensive strategy only addresses the disease. The disarming strategy addresses both: it
 removes the source of transmission and also shrinks the invasive population. **This explains
@@ -268,6 +251,13 @@ require tracking the pathogen on its own. This is why the team kept developing t
 strategy for reintroduction programmes.
 
 ## Validation
+
+Untreated, the model reproduces a real, documented collapse of native crayfish
+(Bubb, Thom & Lucas 2006) with a **95 % match**, using moderate competition and β = 0.9.
+
+<details>
+<summary><b>Click to see the 5 validation steps</b></summary>
+<br>
 
 **Step 1 · Trusting the model before trusting its results.** A model can be internally
 consistent and still wrong, so we tested it against a real outcome.
@@ -289,6 +279,8 @@ compared the results with the real decline.
 inconsistent. **Moderate competition with β = 0.9 matches at 95 %.** In that scenario, natives
 fall by 95 % over two years while invasives grow by more than 300 %. The remaining gap probably
 reflects harsher conditions at the real site than our Neutral scenario assumes.
+
+</details>
 
 <table>
   <tr>
@@ -464,7 +456,6 @@ stochastic-treatment-efficacy-model/
 ---
 
 <p align="center">
-  <img src="docs/images/astaci-logo.png" width="70" alt=""><br>
   <sub>Developed by the <b>iGEM 2026 UNILausanne</b> team, University of Lausanne, Switzerland.<br>
   Code: <a href="LICENSE">MIT License</a> · Logo, illustrations and wiki content: © UNILausanne iGEM 2026, CC BY 4.0 · Figure 3 created with BioRender.com</sub>
 </p>
