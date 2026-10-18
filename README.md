@@ -95,24 +95,27 @@ outcomes.
 p_{\text{infection}} = 1 - e^{-\beta I_C / I}
 ```
 
-For the two treatments, $c$ is the share of crayfish that receive a dose each month and $f$ is
-the share of doses that are RNAi (the rest are protein).
+> **Treatment doses** (used in steps ④ and ⑤)
+>
+> Each month a share $c$ of crayfish receives a dose (coverage). A fraction $f$ of the doses is RNAi and $1-f$ is protein. With treatment efficacies $e_N$ and $e_I$:
+>
+> ```math
+> p_{\text{protect}} = c \cdot (1-f) \cdot e_N
+> ```
+>
+> ```math
+> p_{\text{kill}} = c \cdot f \cdot \big(1 - c \cdot (1-f)\big) \cdot e_I
+> ```
+>
+> The factor $1 - c \cdot (1-f)$ appears because a carrier that also receives protein in the same month is rescued by it.
 
-**④ Defend.** An infected native that receives protein is protected for the month. Unprotected infected natives die with probability $\mu_A$:
+**④ Defend.** Infected natives that receive protein are protected for the month. The others die with probability $\mu_A$:
 
 ```math
-p_{\text{protect}} = c \cdot (1-f) \cdot e_N
+\text{protected} \sim \text{Binomial}\big(N_I,\ p_{\text{protect}}\big), \qquad \text{plague deaths} \sim \text{Binomial}\big(N_I - \text{protected},\ \mu_A\big)
 ```
 
-```math
-\text{plague deaths} \sim \text{Binomial}\big(N_I - \text{protected},\ \mu_A\big)
-```
-
-**⑤ Disarm.** A carrier that receives RNAi dies, unless it also received protein that month, which rescues it:
-
-```math
-p_{\text{kill}} = c \cdot f \cdot \big(1 - c \cdot (1-f)\big) \cdot e_I
-```
+**⑤ Disarm.** RNAi kills only carriers:
 
 ```math
 \text{RNAi deaths} \sim \text{Binomial}\big(I_C,\ p_{\text{kill}}\big)
