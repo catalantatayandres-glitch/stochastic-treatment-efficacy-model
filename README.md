@@ -63,7 +63,7 @@ individual crayfish and sorts them into four groups:
 Every month, the same six events happen in the same order:
 
 <p align="center">
-  <img src="docs/images/monthly-cycle.svg" width="780" alt="The monthly cycle: reproduction, natural mortality, disease transmission, defensive strategy, disarming strategy, record and advance">
+  <img src="docs/images/monthly-cycle.png" width="720" alt="The monthly cycle: reproduction, natural mortality, disease transmission, defensive strategy, disarming strategy, record and advance">
 </p>
 <p align="center"><sub><b>Figure 1.</b> The monthly cycle of the model, repeated 120 times.</sub></p>
 
