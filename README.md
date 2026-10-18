@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="docs/images/astaci-logo.png" width="230" alt="ASTACI, iGEM 2026, University of Lausanne">
+  <img src="docs/images/astaci-logo.png" width="200" alt="ASTACI, iGEM 2026, University of Lausanne">
 </p>
 
 <h1 align="center">Stochastic Treatment Efficacy Model</h1>
 
 <p align="center">
-  <b>Modelling RNAi and protein supplementation strategies against crayfish plague</b><br>
-  Dry Lab model of project <b>ASTACI</b> · iGEM 2026 · University of Lausanne
+  Which treatment saves native crayfish from crayfish plague?<br>
+  <sub>Dry Lab model · Project ASTACI · iGEM 2026 · University of Lausanne</sub>
 </p>
 
 <p align="center">
@@ -15,372 +15,260 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license">
 </p>
 
+---
+
+## In short
+
+- **The problem:** an invasive crayfish carries a disease that kills native crayfish.
+- **Two treatments:** *Disarm* (RNAi) targets the invasive carriers; *Defend* (a protein supplement) protects the natives.
+- **The model** simulates ten years of both populations to find the best way to use them.
+- **The answer:** the more of the effort goes to **RNAi**, the better the natives do. The protein works best somewhere else: lakes with the disease but no invaders.
+
 <p align="center">
-  <a href="https://2026.igem.wiki/unilausanne/model/">Wiki model page</a> · <a href="#quickstart">Quickstart</a>
+  <img src="figures/wiki_figure_transmission_0.9.png" width="720" alt="Native population over 10 years under six treatment strategies">
 </p>
+<p align="center"><sub><b>Figure 2.</b> Native crayfish over 10 years for six ways of splitting the treatment, from all protein (blue) to all RNAi (red). Lines are medians; shaded bands show the range of likely outcomes.</sub></p>
 
 ---
 
 ## What is iGEM?
 
 **iGEM** (International Genetically Engineered Machine) is the world's largest synthetic
-biology competition. It started at MIT in 2003 and is now run by the independent, non-profit
-iGEM Foundation. Every year, student teams from around the world spend several months
-designing, building and testing biological solutions to real-world problems. Each team
-combines **wet-lab** experiments, **dry-lab** modelling and **human practices**, which means
-working with stakeholders and society. Teams document everything on a public wiki and present
-their project at the annual Grand Jamboree.
+biology competition. Every year, student teams from around the world spend several months
+designing and testing biological solutions to real problems. Teams combine lab work,
+computer modelling (the "Dry Lab") and work with the people affected by the problem.
 
 ## Our project: ASTACI
 
-> *"For more than a century, European crayfish populations have been declining at an alarming
-> rate. Today, native crayfish survive only in isolated freshwater habitats."*
+Native European crayfish are disappearing. The main cause is **crayfish plague**, a disease
+brought to Europe by the invasive **signal crayfish**. Signal crayfish carry the disease without
+getting sick, but infected native crayfish die at rates close to **100 %**. In Switzerland, all
+native crayfish species are now highly threatened.
 
-The main cause is **crayfish plague**, a disease caused by the oomycete *Aphanomyces astaci*.
-It arrived in Europe with North American crayfish such as the **signal crayfish**
-(*Pacifastacus leniusculus*), which carry the pathogen without getting sick. When they share a
-river with native species such as the **white-clawed crayfish** (*Austropotamobius pallipes*),
-the pathogen spills over, and infected natives die at rates approaching 100 %. In Switzerland,
-all native crayfish species are now considered highly threatened, while *A. astaci* keeps
-spreading through the country's waterways.
-
-The **UNILausanne** team from the University of Lausanne designed **ASTACI**, a three-part
-synthetic biology response:
+The **UNILausanne** team (University of Lausanne) designed **ASTACI**, a three-part response:
 
 | <img src="docs/images/detect.png" height="64" alt=""> | <img src="docs/images/disarm.png" height="64" alt=""> | <img src="docs/images/defend.png" height="64" alt=""> |
 |:---:|:---:|:---:|
-| **Detect** the pathogen | **Disarm** the carrier | **Defend** the crayfish |
-| LAMP test for *A. astaci* DNA in water samples | RNAi makes invasive carriers susceptible | Protein supplement makes natives tolerant |
+| **Detect** the disease | **Disarm** the carrier | **Defend** the native |
+| A field test that finds the pathogen in water | RNAi makes invasive carriers vulnerable to their own disease | A protein supplement helps natives survive infection |
 
-**This repository holds the Dry Lab model behind *Disarm* and *Defend*.** It is a stochastic
-population model that predicts what each intervention, or a combination of the two, would do
-to a river's crayfish populations over ten years. The model guided the team's decision on how
-to deploy the two treatments.
+This repository contains the **computer model** we used to decide how to use *Disarm* and
+*Defend*.
 
 ---
 
 # The model
 
-<p align="center">
-  <a href="#introduction">Introduction</a> ·
-  <a href="#how-the-model-works">How the model works</a> ·
-  <a href="#parameters">Parameters</a> ·
-  <a href="#results">Results</a> ·
-  <a href="#discussion">Discussion</a> ·
-  <a href="#validation">Validation</a> ·
-  <a href="#other-explorations">Other explorations</a> ·
-  <a href="#assumptions">Assumptions</a> ·
-  <a href="#limitations">Limitations</a> ·
-  <a href="#references">References</a>
-</p>
+## The questions
 
-## Introduction
+1. Do the treatments actually help native crayfish survive?
+2. What is the best way to use them: one, the other, or a mix of both?
 
-Our project developed two strategies: an **RNAi-based tool that makes the invasive carrier
-susceptible** to crayfish plague (*disarm*), and a **protein supplement that gives native
-crayfish tolerance** to the disease (*defend*). We built the model to answer two questions:
+## How it works
 
-1. Would these strategies make a measurable difference to the survival of native crayfish?
-2. What is the best way to deploy them: together, alone, or in a specific combination?
+The model follows a river with both species, **month by month for 10 years**. It counts
+individual crayfish and sorts them into four groups:
 
-## How the model works
+| | Healthy | Carrying or infected |
+|---|---|---|
+| **Invasive crayfish** | $I_S$ | $I_C$ (carriers, not harmed by the disease) |
+| **Native crayfish** | $N_S$ | $N_I$ (infected, usually die) |
 
-The model follows both crayfish populations **month by month for 10 years** (120 steps). It
-counts individual animals and splits each population by infection status:
-
-- **Invasive:** $I = I_S + I_C$, where $I_S$ are non-carriers and $I_C$ are pathogen carriers
-- **Native:** $N = N_S + N_I$, where $N_S$ are susceptible and $N_I$ are infected
-
-Each month, six events happen in the same order for both species:
+Every month, the same six events happen in the same order:
 
 <p align="center">
-  <img src="docs/images/monthly-cycle.svg" width="820" alt="The monthly cycle: reproduction, natural mortality, disease transmission, defensive strategy, disarming strategy, record and advance">
+  <img src="docs/images/monthly-cycle.svg" width="780" alt="The monthly cycle: reproduction, natural mortality, disease transmission, defensive strategy, disarming strategy, record and advance">
 </p>
-<p align="center"><sub><b>Figure 1.</b> The monthly cycle of the model. The six events run in the same order for the invasive and native populations, 12 times a year over 10 years.</sub></p>
+<p align="center"><sub><b>Figure 1.</b> The monthly cycle of the model, repeated 120 times.</sub></p>
 
-Every event is a **random draw**, so no two runs are identical. We therefore run 30–50
-replicates for each condition and report the **median** trajectory, with a band from the 10th
-to the 90th percentile.
+Each event involves chance, so two runs never end exactly the same. We run each scenario
+30–50 times and show the **median** result, with a shaded band for the range of likely
+outcomes.
 
-<details>
-<summary><b>Show the model equations</b></summary>
-<br>
+### The equations
 
-**1 · Reproduction.** Lotka–Volterra logistic recruitment, drawn from a Poisson distribution:
+**① Reproduction.** Each species grows until it fills its habitat, and the other species takes up space too:
 
-$$R_I \sim \text{Poisson}\Big(\max\big(0,\ r_I\, I\,\big(1 - \tfrac{I + \alpha_{IN} N}{K_I}\big)\big)\Big), \qquad
-R_N \sim \text{Poisson}\Big(\max\big(0,\ r_N\, N\,\big(1 - \tfrac{N + \alpha_{NI} I}{K_N}\big)\big)\Big)$$
+$$\lambda_I = r_I\, I \left(1 - \frac{I + \alpha_{IN}\, N}{K_I}\right), \qquad \lambda_N = r_N\, N \left(1 - \frac{N + \alpha_{NI}\, I}{K_N}\right)$$
 
-A fraction $p_{\text{rc}}$ of invasive recruits are carriers. All native recruits are susceptible.
+$$\text{newborns} \sim \text{Poisson}(\lambda)$$
 
-**2 · Natural mortality.** Each animal dies with monthly probability $m_I$ or $m_N$, drawn as
-$\text{Binomial}(n, m)$.
+**② Natural death.** Each crayfish dies with a small monthly probability $m$:
 
-**3 · Disease transmission.** Frequency-dependent spillover from invasive carriers to
-susceptible natives:
+$$\text{deaths} \sim \text{Binomial}(n,\ m)$$
 
-$$p_{\text{inf}} = 1 - \exp\Big(-\beta\,\frac{I_C}{I + \varepsilon}\Big), \qquad \text{new infections} \sim \text{Binomial}(N_S,\ p_{\text{inf}})$$
+**③ Disease transmission.** The more carriers among the invasives, the higher the infection risk for a native:
 
-**Treatment split.** A coverage $c$, the share of animals that meet a dose each month, is
-divided between the two payloads by the RNAi share $f$ (`mix_fraction_kill`):
+$$p_{\text{infection}} = 1 - e^{-\beta\, I_C / I}$$
 
-$$p_{\text{kill}} = c\,f, \qquad p_{\text{protect}} = c\,(1-f)$$
+**Splitting the treatment.** A share $c$ of crayfish meets a dose each month (coverage). A fraction $f$ of the doses is RNAi and $1-f$ is protein:
 
-Interference between the payloads is **asymmetric**, because the biology is. A carrier that
-takes up both payloads in the same month is rescued, since the protein restores the tolerance
-that RNAi silenced. Natives never expressed the target gene, so RNAi has no effect on them.
+$$p_{\text{protect}} = c\,(1-f)\,e_N \qquad\qquad p_{\text{kill}} = c\,f\,\big(1 - c\,(1-f)\big)\,e_I$$
 
-**4 · Defensive strategy.** Protected infected natives survive the month. Unprotected ones die
-with probability $\mu_A$:
+The extra factor in $p_{\text{kill}}$ is there because a carrier that also takes the protein is rescued by it.
 
-$$P \sim \text{Binomial}(N_I,\ p_{\text{protect}}\,e_N), \qquad \text{plague deaths} \sim \text{Binomial}(N_I - P,\ \mu_A)$$
+**④ Defend.** Protected natives survive the month. Unprotected infected natives die with probability $\mu_A$:
 
-**5 · Disarming strategy.** RNAi kills **carriers only**, so it removes the disease reservoir
-without affecting non-carriers:
+$$\text{plague deaths} \sim \text{Binomial}\big(N_I - \text{protected},\ \mu_A\big)$$
 
-$$\text{RNAi deaths} \sim \text{Binomial}\big(I_C,\ p_{\text{kill}}\,(1-p_{\text{protect}})\,e_I\big)$$
+**⑤ Disarm.** RNAi kills only carriers:
 
-**Optional migration.** When it is switched on, each sub-population loses
-$\text{Binomial}(n, m_{\text{mig}})$ emigrants and gains $\text{Poisson}(m_{\text{mig}} K)$
-immigrants from surrounding populations assumed to be at carrying capacity.
-
-</details>
+$$\text{RNAi deaths} \sim \text{Binomial}\big(I_C,\ p_{\text{kill}}\big)$$
 
 ## Parameters
 
 <details>
-<summary><b>Click to see the 13 parameters</b>: definition, value used and literature basis</summary>
+<summary><b>Click to see the parameters</b> (values and sources)</summary>
 <br>
 
-All rates are **monthly**. The values are those of the reference scenario used in the main
-results.
+All rates are per month.
 
-| Parameter | Definition | Value used | Basis |
+| Symbol | Meaning | Value | Source |
 |---|---|:---:|---|
-| $I_0,\ N_0$ | Starting population of each species | $0.2\,K$ | Modelling choice: set relative to each species' carrying capacity |
-| $p_{C0}$ | Share of invasive crayfish carrying the pathogen at the start | 0.2 | Filipová et al. 2013: 20 % of more than 500 signal crayfish tested positive, averaged over 45 populations |
-| $p_{\text{rc}}$ | Share of new invasive recruits that are carriers | 0.2 | Same source as $p_{C0}$ |
-| $r_I,\ r_N$ | Intrinsic growth rate | 0.45, 0.12 | Calibrated from fecundity data; invasives grow about four times faster. Red swamp crayfish used as a proxy where signal crayfish data were missing (Jin et al. 2019; Wendler et al. 2015; Grandjean et al. 2000) |
-| $K_I,\ K_N$ | Carrying capacity, the "habitat" | 6,400, 5,500 | Field densities (Bubb et al. 2011; Guan 2000; Wendler et al. 2015; Grandjean et al. 2000; Pearson 2011) |
-| $\alpha_{IN},\ \alpha_{NI}$ | Competition coefficients | 0.3, 0.5 | No literature value; only the direction is documented (Vaeßen & Hollert 2015). Level calibrated in [Validation](#validation) |
-| $m_I,\ m_N$ | Natural mortality | 0.08, 0.01 | Invasive from an annual estimate (Jin et al. 2019); native back-calculated from a 9–11 year lifespan (Wendler et al. 2015) |
-| $\beta$ | Transmission coefficient | 0.9 | No literature value, an open problem (Bozzuto et al. 2024). Calibrated in [Validation](#validation) |
-| $\mu_A$ | Plague mortality of infected natives | 0.8 | Near-total mortality within about 60–120 days (Martínez-Ríos et al. 2022; Martín-Torrijos et al. 2017) |
-| $c$ | Coverage: share of crayfish reached by treatment each month | 0.5 | No literature value; scenario choice |
-| $f$ | Strategy split: 0 = defend only, 1 = disarm only | 0 → 1 | The decision variable being studied |
-| $e_I,\ e_N$ | Treatment efficacy | 1.0 | A best-case target, not a measured value |
-| $m_{\text{mig}}$ | Monthly migration rate | 0 (off) | Qualitative movement data (Bubb et al. 2004, 2006) |
+| $I_0,\ N_0$ | Starting population | 20 % of $K$ | Modelling choice |
+| $p_{C0}$ | Share of invasives carrying the disease at the start | 0.2 | Filipová et al. 2013 (20 % of over 500 signal crayfish tested positive) |
+| $p_{\text{rc}}$ | Share of invasive newborns that are carriers | 0.2 | Same as above |
+| $r_I,\ r_N$ | Growth rate | 0.45, 0.12 | Fecundity data; invasives grow about 4× faster (Jin et al. 2019; Wendler et al. 2015; Grandjean et al. 2000) |
+| $K_I,\ K_N$ | Habitat capacity | 6,400, 5,500 | Field densities (Bubb et al. 2011; Guan 2000; Wendler et al. 2015; Pearson 2011) |
+| $\alpha_{IN},\ \alpha_{NI}$ | Competition between species | 0.3, 0.5 | Calibrated in Validation (direction from Vaeßen & Hollert 2015) |
+| $m_I,\ m_N$ | Natural death rate | 0.08, 0.01 | Jin et al. 2019; native lifespan of 9–11 years (Wendler et al. 2015) |
+| $\beta$ | How easily the disease spreads | 0.9 | Calibrated in Validation (no published value, Bozzuto et al. 2024) |
+| $\mu_A$ | Death rate of infected natives | 0.8 | Near-total death within 60–120 days (Martínez-Ríos et al. 2022; Martín-Torrijos et al. 2017) |
+| $c$ | Coverage: share of crayfish reached each month | 0.5 | Scenario choice |
+| $f$ | Share of the treatment that is RNAi | 0 to 1 | What we are testing |
+| $e_I,\ e_N$ | Treatment efficacy | 1.0 | Best-case target |
 
-**Scenario presets used across the analyses**
+**Habitats tested** ($K_I$ / $K_N$): Favors native 5,000 / 6,400 · **Neutral 6,400 / 5,500** · Balanced 8,000 / 3,000 · Favors invasive 11,000 / 1,400
 
-| Habitat | $K_I$ | $K_N$ |
-|---|:---:|:---:|
-| Favors native | 5,000 | 6,400 |
-| **Neutral** (reference) | **6,400** | **5,500** |
-| Balanced | 8,000 | 3,000 |
-| Favors invasive | 11,000 | 1,400 |
-
-| Competition | $\alpha_{IN}$ | $\alpha_{NI}$ |
-|---|:---:|:---:|
-| Low | 0.1 | 0.3 |
-| **Moderate** (reference) | **0.3** | **0.5** |
-| High | 0.7 | 0.9 |
+**Competition levels** ($\alpha_{IN}$ / $\alpha_{NI}$): Low 0.1 / 0.3 · **Moderate 0.3 / 0.5** · High 0.7 / 0.9
 
 </details>
 
 ## Results
 
-### From efficacy to field application
+We tested six ways of splitting the same treatment effort, from all protein to all RNAi
+(Figure 2, at the top of this page).
 
-A sensitivity analysis showed which parameters matter most (see
-[Other explorations](#other-explorations)). We fixed habitat, competition and transmission at
-the values selected in [Validation](#validation), then swept the strategy split $f$ from 0
-(protein only) to 1 (RNAi only) at 50 % coverage and 100 % efficacy.
-
-<p align="center">
-  <img src="figures/wiki_figure_transmission_0.9.png" width="760" alt="Native population over 10 years under six treatment strategies">
-</p>
-<p align="center"><sub><b>Figure 2.</b> Native crayfish population over 10 years under six treatment strategies in the same scenario (Neutral habitat, moderate competition, β = 0.9). Lines show the median of the simulation runs; shaded areas show the range of likely outcomes.</sub></p>
-
-### A monotonic trend
-
-**The more RNAi (disarm) is delivered relative to protein (defend), the better the outcome for
-the native population.**
-
-| Strategy | Natives after 10 years (start ≈ 1,100) |
+| Strategy | Native crayfish after 10 years (start: about 1,100) |
 |---|---|
-| No treatment | Extinct within about 4 years |
-| Protein supplementation (`mix = 0`) | Extinct within about 5 years, close to no treatment |
-| Mixed (`mix = 0.25`) | Extinct within about 8 years |
-| Mixed (`mix = 0.5`) | About 115 and still declining |
-| Mixed (`mix = 0.75`) | About 620 and stable |
-| **RNAi strategy (`mix = 1`)** | **About 1,240 and growing** |
+| No treatment | ❌ Gone after about 4 years |
+| All protein | ❌ Gone after about 5 years |
+| 25 % RNAi | ❌ Gone after about 8 years |
+| 50 % RNAi | ⚠️ About 115, still falling |
+| 75 % RNAi | ⚠️ About 620, stable |
+| **All RNAi** | ✅ **About 1,240, growing** |
 
-### Testing the trend more broadly
+**The more RNAi, the better.** We checked this across other habitats, competition levels,
+coverage, efficacy and migration, and the pattern always held (see
+[Other explorations](#other-explorations)).
 
-We tested efficacy from 20 % to 100 %, coverage from 10 % to 90 %, different starting
-conditions, disease severity, competition strength, and invasive migration. **The same pattern
-held in every case.** The details are in [Other explorations](#other-explorations).
+### So is the protein useless?
 
-### Reconsidering the role of protein supplementation
-
-La Maison de la Rivière, a Swiss foundation, reported that native crayfish reintroduced into a
-lake with **no invasive crayfish** still died, because *A. astaci* was already in the water.
-RNAi cannot help in that situation, because there is no carrier to target. Protein
-supplementation is the right tool for reintroductions into habitats like this, which are free
-of invaders but still carry the pathogen.
+No. A Swiss conservation foundation, La Maison de la Rivière, told us about native crayfish
+that were released into a lake with **no invasive crayfish** and still died, because the
+disease was already in the water. RNAi cannot help there, because there are no carriers to
+target. **The protein is the right tool for these reintroductions.**
 
 <p align="center">
-  <img src="docs/images/figure3-protein-supplementation.png" width="780" alt="Two panels: without treatment, native crayfish die in a pathogen-positive lake; with protein supplementation, they survive">
+  <img src="docs/images/figure3-protein-supplementation.png" width="720" alt="Without treatment, native crayfish die in a lake with the pathogen; with protein supplementation, they survive">
 </p>
-<p align="center"><sub><b>Figure 3.</b> Protein supplementation in an invasive-free, pathogen-positive habitat. Left: without treatment, introduced native crayfish die. Right: with protein supplementation, they survive. Created with BioRender.com.</sub></p>
+<p align="center"><sub><b>Figure 3.</b> In a lake with the disease but no invaders, the protein protects native crayfish. Created with BioRender.com.</sub></p>
 
-## Discussion
+## Why RNAi wins
 
-Native crayfish face **two problems** at once:
-
-1. **Competition.** Invasive crayfish outcompete natives even without the pathogen, though less severely than when it is present (Pritchard 2020).
-2. **Disease.** Invasive carriers transmit crayfish plague, which kills almost every infected native.
-
-The defensive strategy only addresses the disease. The disarming strategy addresses both: it
-removes the source of transmission and also shrinks the invasive population. **This explains
-the monotonic trend.**
-
-The model cannot represent a habitat that holds the pathogen but no invader, because that would
-require tracking the pathogen on its own. This is why the team kept developing the defensive
-strategy for reintroduction programmes.
+Native crayfish face **two problems**: invasive crayfish compete with them for space and food,
+and they spread the disease. The protein only solves the disease. RNAi solves **both**,
+because removing carriers stops the disease and also shrinks the invasive population.
 
 ## Validation
 
-Untreated, the model reproduces a real, documented collapse of native crayfish
-(Bubb, Thom & Lucas 2006) with a **95 % match**, using moderate competition and β = 0.9.
+How do we know the model is realistic? We checked it against a real event.
 
-<details>
-<summary><b>Click to see the 5 validation steps</b></summary>
-<br>
-
-**Step 1 · Trusting the model before trusting its results.** A model can be internally
-consistent and still wrong, so we tested it against a real outcome.
-
-**Step 2 · Defining a tractable validation strategy.** Competition and transmission were the
-most influential parameters with no independent literature value. We checked whether an
-untreated run reproduces the shape and severity of a documented decline.
-
-**Step 3 · A documented case of native displacement.** Bubb, Thom & Lucas (2006) tracked 15
-invasive signal crayfish and 20 native white-clawed crayfish at one river site in 2003. By 2005
-**no native crayfish remained**, while the invasive density had increased.
-
-**Step 4 · Fitting the model to a known outcome.** In the Neutral habitat, with no treatment,
-we ran a grid of three competition levels and β from 0.5 to 0.9 over the same two years, and
-compared the results with the real decline.
-
-**Step 5 · Selecting moderate competition and β = 0.9.** The closest fit was high competition
-(97 %), but we rejected it: a Neutral habitat paired with high competition would be internally
-inconsistent. **Moderate competition with β = 0.9 matches at 95 %.** In that scenario, natives
-fall by 95 % over two years while invasives grow by more than 300 %. The remaining gap probably
-reflects harsher conditions at the real site than our Neutral scenario assumes.
-
-</details>
+1. **The test case.** Scientists followed a river where both species lived in 2003 (Bubb, Thom & Lucas 2006). By 2005, **every native crayfish was gone**, and the invaders had increased.
+2. **The unknowns.** Two important parameters, competition and disease spread (β), have no published values.
+3. **The fit.** We ran the model with no treatment for two years, trying different values for these two parameters (Figure 4).
+4. **The choice.** Moderate competition with β = 0.9 reproduces the real collapse at **95 %**. A high-competition setting fitted slightly better (97 %), but it does not match the "neutral" habitat used in the rest of the study.
+5. **The result.** With these values, natives fall by 95 % in two years while invaders grow by more than 300 % (Figure 5). We used these values for all results.
 
 <table>
   <tr>
-    <td width="50%"><img src="figures/validation_figure1_grid.png" alt="Heatmap of native decline after two years by competition level and transmission"></td>
-    <td width="50%"><img src="figures/validation_figure2_selected_scenario.png" alt="Native and invasive trajectories over two years under the selected scenario"></td>
+    <td width="50%"><img src="figures/validation_figure1_grid.png" alt="How closely each parameter combination matches the real decline"></td>
+    <td width="50%"><img src="figures/validation_figure2_selected_scenario.png" alt="Native and invasive populations over two years in the selected scenario"></td>
   </tr>
   <tr>
-    <td valign="top"><sub><b>Figure 4.</b> Fit between the model and the native decline documented by Bubb et al. (2006): median native decline after two years without treatment. 100 % would match the real outcome exactly. The outlined cell is the selected scenario.</sub></td>
-    <td valign="top"><sub><b>Figure 5.</b> Native and invasive trajectories under the selected scenario (Neutral habitat, moderate competition, β = 0.9, no treatment) over the same two-year window. Lines are medians; bands span the 10th to 90th percentile.</sub></td>
+    <td valign="top"><sub><b>Figure 4.</b> How closely each combination matches the real collapse (100 % = perfect match). The outlined cell was selected.</sub></td>
+    <td valign="top"><sub><b>Figure 5.</b> Native and invasive crayfish over two years with the selected values and no treatment.</sub></td>
   </tr>
 </table>
 
 ## Other explorations
 
 <details>
-<summary><b>1 · Sensitivity analysis</b></summary>
+<summary><b>Which parameters matter most?</b> Disease spread, native habitat size and the share of carrier newborns.</summary>
 <br>
-
-Each of 17 ecological and disease parameters was varied over 3–5 values while all the others
-stayed at baseline. Treatment was fixed at 80 % coverage, an 80 % RNAi share and 100 %
-efficacy. The bars show how far the median final native population moves across each
-parameter's tested range. **Transmission (β), native carrying capacity and the share of
-carrier recruits matter most.** This is why β was calibrated against field data.
-
-<p align="center"><img src="figures/sensitivity_tornado_wiki.png" width="600" alt="Tornado chart of parameter sensitivity"></p>
+<p align="center"><img src="figures/sensitivity_tornado_wiki.png" width="560" alt="Parameter sensitivity"></p>
+We changed one parameter at a time and measured how much the final native population moved.
 </details>
 
 <details>
-<summary><b>2 · Testing across ecological scenarios</b></summary>
+<summary><b>Does RNAi win in every habitat?</b> It never loses in the 27 scenarios tested.</summary>
 <br>
-
-We tested 3 habitats × 3 competition levels × 3 transmission levels. Each cell shows the
-**RNAi advantage**: the median final native population under disarm minus the same under
-defend. RNAi wins outright in **22 of 27** scenarios and never loses. In the other 5, both
-strategies end at zero, which is a floor effect rather than a protein win.
-
-<p align="center"><img src="figures/other_explorations_habitat_competition_transmission.png" width="820" alt="RNAi advantage across 27 ecological scenarios"></p>
+<p align="center"><img src="figures/other_explorations_habitat_competition_transmission.png" width="800" alt="RNAi advantage across 27 scenarios"></p>
+Green means RNAi beats protein. RNAi wins outright in 22 scenarios. In the other 5, both strategies fail equally.
 </details>
 
 <details>
-<summary><b>3 · The influence of treatment performance</b></summary>
+<summary><b>What if the treatment works less well?</b> RNAi is far more forgiving.</summary>
 <br>
-
-Coverage and efficacy were each swept from 20 % to 100 %. RNAi preserves natives across most
-of the grid. Protein supplementation only holds them when **coverage × efficacy stays above
-about 95 %**, because every infected native must be protected every month. At 90 % delivery
-natives fall to about 200, and at 85 % they are nearly gone, while RNAi keeps more than 1,800
-across the same range. This makes protein supplementation the least robust option in the
-field.
-
-<p align="center"><img src="figures/other_explorations_coverage_efficacy_absolute.png" width="880" alt="Final native population across coverage and efficacy"></p>
+<p align="center"><img src="figures/other_explorations_coverage_efficacy_absolute.png" width="860" alt="Final native population across coverage and efficacy"></p>
+The protein only saves natives when almost every crayfish is reached and the dose always works (above about 95 %). RNAi still works well at much lower levels.
 </details>
 
 <details>
-<summary><b>4 · Migration effect</b></summary>
+<summary><b>What if crayfish move in and out?</b> RNAi still protects the natives.</summary>
 <br>
-
-We switched on 5 % monthly migration in both directions for both species, with the surrounding
-populations assumed to be at carrying capacity. The RNAi strategy still preserves the natives,
-and immigrants from the untreated surroundings raise the plateau further. This result depends
-on those surrounding populations being healthy.
-
-<p align="center"><img src="figures/other_explorations_migration_effect.png" width="720" alt="Native population with and without migration under the RNAi strategy"></p>
+<p align="center"><img src="figures/other_explorations_migration_effect.png" width="700" alt="Native population with and without migration"></p>
+With 5 % of crayfish moving each month, natives arriving from healthy surroundings even raise the population further.
 </details>
 
 ## Assumptions
 
 <details>
-<summary><b>Show the 12 modelling assumptions</b></summary>
+<summary><b>Click to see the assumptions</b></summary>
 <br>
 
-1. **Neutral habitat as the reference.** Main results use a habitat that favors neither species, so the strategies are tested under non-extreme conditions.
-2. A single, well-mixed site with no spatial structure.
-3. Monthly time steps, with events always applied in the same order.
-4. Logistic recruitment with Lotka–Volterra competition, and no breeding season.
-5. Only invasive carriers transmit the pathogen; infected natives are not a source of infection.
-6. Carriers suffer no disease mortality and, by default, no fitness cost.
-7. A fixed 20 % of invasive recruits are carriers, regardless of their parents' status.
-8. Infected natives do not recover on their own.
-9. Protection lasts one month and must be renewed every month.
-10. RNAi affects carriers only, and the two payloads interfere asymmetrically.
-11. Treatment is delivered every month.
-12. Migration, when switched on, uses the same rate for both species. This is a deliberate simplification: signal crayfish disperse about twice as far (Bubb et al. 2006).
+1. The river is one well-mixed site, with no geography.
+2. Events happen monthly, always in the same order, with no breeding season.
+3. Only invasive carriers spread the disease.
+4. Carriers are not harmed by the disease.
+5. 20 % of invasive newborns are carriers.
+6. Infected natives do not recover on their own.
+7. Protection lasts one month and must be renewed.
+8. RNAi affects only carriers; a carrier that also takes the protein is rescued.
+9. Treatment is given every month.
+10. The reference habitat is "neutral": it favors neither species.
+11. When migration is on, both species move at the same rate (in reality signal crayfish move about twice as far).
 </details>
 
 ## Limitations
 
 <details>
-<summary><b>Show the 6 limitations</b></summary>
+<summary><b>Click to see the limitations</b></summary>
 <br>
 
-1. Competition and transmission have no literature values and were calibrated on a single documented site.
-2. Validation is qualitative rather than a statistical fit.
-3. The sensitivity analysis varies one parameter at a time, so it misses interactions. A global method such as Sobol would capture them.
-4. Some demographic rates use red swamp crayfish (*Procambarus clarkii*) as a proxy.
-5. The pathogen is not tracked on its own, so habitats with the pathogen but no invader cannot be simulated.
-6. Coverage and efficacy are target values, not measured field performance.
+1. Competition and disease spread were calibrated on one river only.
+2. The validation compares overall trends, not exact numbers.
+3. Parameters were tested one at a time, so combined effects are not captured.
+4. Some rates come from a related species, the red swamp crayfish.
+5. The disease cannot exist without invaders in the model, so lakes with only the disease cannot be simulated.
+6. Coverage and efficacy are targets, not measured field values.
 </details>
 
 ## References
+
+<details>
+<summary><b>Click to see the references</b></summary>
+<br>
 
 1. Bozzuto, C. et al. (2024). *Journal of Freshwater Ecology.*
 2. Bubb, D.H., Thom, T.J. & Lucas, M.C. (2004). Movement and dispersal of the invasive signal crayfish *Pacifastacus leniusculus* in upland rivers. *Freshwater Biology*, 49, 357–368.
@@ -396,66 +284,58 @@ on those surrounding populations being healthy.
 12. Pritchard, E. (2020). *The Conversation.*
 13. Vaeßen, S. & Hollert, H. (2015).
 14. Wendler, F. et al. (2015). *Knowledge and Management of Aquatic Ecosystems.*
-15. La Maison de la Rivière, personal communication (not a published source).
+15. La Maison de la Rivière, personal communication.
 
 Full citations are on the [team wiki](https://2026.igem.wiki/unilausanne/model/).
+</details>
 
 ---
 
-# Using the code
-
-## Quickstart
+# Run it yourself
 
 ```bash
 git clone https://github.com/catalantatayandres-glitch/stochastic-treatment-efficacy-model.git
 cd stochastic-treatment-efficacy-model
-pip install -e ".[dev]"        # or: pip install -r requirements.txt
+pip install -e .
 
-python run_all.py              # regenerate every figure in figures/ (about 30 s)
-python run_all.py main_results # or a single analysis
-pytest                         # run the test suite
+python run_all.py      # recreate every figure (about 30 seconds)
 ```
 
-All runs are seeded, so the same code and library versions regenerate identical figures.
+<details>
+<summary><b>More: use the model in Python, run the tests, folder layout</b></summary>
+<br>
 
-**Use the model as a library:**
+**Run one simulation:**
 
 ```python
 from stochastic_treatment_efficacy_model import DEFAULT_PARAMS, simulate_combined_treatment
 
 params = {**DEFAULT_PARAMS, "K_I": 6400, "K_N": 5500, "beta": 0.9,
-          "overall_encounter_rate": 0.5, "mix_fraction_kill": 1.0}   # 50 % coverage, RNAi only
+          "overall_encounter_rate": 0.5,   # coverage c = 50 %
+          "mix_fraction_kill": 1.0}        # f = 1: all RNAi
 df = simulate_combined_treatment(params, seed=0)   # one row per month
-print(df[["year", "I", "N", "RNAi_deaths_I", "plague_deaths"]].tail())
+print(df[["year", "I", "N"]].tail())
 ```
 
-| Script | Wiki section | Output |
-|---|---|---|
-| [`analyses/main_results.py`](analyses/main_results.py) | Results (Figure 2) | `wiki_figure_transmission_0.9.png` |
-| [`analyses/validation_bubb2006.py`](analyses/validation_bubb2006.py) | Validation (Figures 4–5) | `validation_figure1_grid.png`, `validation_figure2_selected_scenario.png` |
-| [`analyses/sensitivity_analysis.py`](analyses/sensitivity_analysis.py) | Other explorations 1 | `sensitivity_tornado_wiki.png` |
-| [`analyses/scenario_robustness.py`](analyses/scenario_robustness.py) | Other explorations 2 | `other_explorations_habitat_competition_transmission.png` |
-| [`analyses/coverage_efficacy.py`](analyses/coverage_efficacy.py) | Other explorations 3 | `other_explorations_coverage_efficacy_absolute.png` |
-| [`analyses/migration_effect.py`](analyses/migration_effect.py) | Other explorations 4 | `other_explorations_migration_effect.png` |
+**Run the tests:** `pip install -e ".[dev]"`, then `pytest`.
 
-## Repository structure
+**Folder layout:**
 
 ```
-stochastic-treatment-efficacy-model/
-├── src/stochastic_treatment_efficacy_model/
-│   └── engine.py        # the stochastic model: parameters, validation, simulation
-├── analyses/            # one script per wiki section; each saves a figure
-├── figures/             # generated figures (300 DPI)
-├── docs/images/         # logo, illustrations and the monthly-cycle diagram
-├── tests/               # pytest suite: model invariants + end-to-end checks
-├── run_all.py           # regenerate every figure
-├── pyproject.toml
-└── requirements.txt
+src/stochastic_treatment_efficacy_model/engine.py   the model
+analyses/      one script per figure (main_results, validation_bubb2006, ...)
+figures/       the generated figures
+docs/images/   logo and illustrations
+tests/         automatic checks
+run_all.py     recreates every figure
 ```
+
+</details>
 
 ---
 
 <p align="center">
-  <sub>Developed by the <b>iGEM 2026 UNILausanne</b> team, University of Lausanne, Switzerland.<br>
+  <sub>Developed by the <b>iGEM 2026 UNILausanne</b> team, University of Lausanne, Switzerland ·
+  <a href="https://2026.igem.wiki/unilausanne/model/">Wiki model page</a><br>
   Code: <a href="LICENSE">MIT License</a> · Logo, illustrations and wiki content: © UNILausanne iGEM 2026, CC BY 4.0 · Figure 3 created with BioRender.com</sub>
 </p>
