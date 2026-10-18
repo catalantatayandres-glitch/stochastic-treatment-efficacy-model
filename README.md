@@ -2,6 +2,7 @@
 
 **Modelling RNAi and protein supplementation strategies against crayfish plague** · iGEM 2026 UNILausanne · *Disarm & Defend*
 
+[![tests](https://github.com/catalantatayandres-glitch/stochastic-treatment-efficacy-model/actions/workflows/tests.yml/badge.svg)](https://github.com/catalantatayandres-glitch/stochastic-treatment-efficacy-model/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Method](https://img.shields.io/badge/method-stochastic%20Monte%20Carlo-orange)
@@ -259,10 +260,10 @@ remaining 5 (+0), both strategies collapse to zero; this is a floor effect, not 
 
 This plot shows the median final native population for each strategy across 20–100 % coverage
 and 20–100 % efficacy. RNAi preserves natives over most of the grid. Protein supplementation
-only works in the single corner of **perfect coverage and perfect efficacy**: there, every
-infected native is protected every month, so disease mortality is eliminated entirely. Any
-shortfall in delivery makes protein supplementation fail. This makes it the least robust option
-for field deployment.
+only holds them when **coverage × efficacy stays above about 95 %**, because every infected
+native must be protected every month. At 90 % delivery natives fall to about 200, and at 85 %
+they are nearly gone, while RNAi keeps more than 1,800 across the same range. This makes
+protein supplementation the least robust option for field deployment.
 
 <p align="center">
   <img src="figures/other_explorations_coverage_efficacy_absolute.png" width="880" alt="Final native population across coverage and efficacy">
@@ -315,7 +316,7 @@ the source populations are healthy.
 ## 9. Quickstart and reproducing the figures
 
 ```bash
-git clone https://github.com/<your-username>/stochastic-treatment-efficacy-model.git
+git clone https://github.com/catalantatayandres-glitch/stochastic-treatment-efficacy-model.git
 cd stochastic-treatment-efficacy-model
 pip install -e ".[dev]"      # or: pip install -r requirements.txt
 
